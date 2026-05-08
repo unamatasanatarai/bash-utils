@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+#
+# pyserve - Python HTTP Server Launcher
+#
+# A convenience wrapper for the Python built-in HTTP server. It starts
+# a server on localhost with a specified port (defaulting to 8000)
+# and performs basic port validation.
+#
+
+if command -v python3 >/dev/null 2>&1; then
+    __python="python3"
+elif command -v python >/dev/null 2>&1; then
+    __python="python"
+else
+    printf "Error: Python is not installed or not in PATH.\n" >&2
+    exit 1
+fi
+
+__port="${1:-8000}"
+
+if ! [[ "$__port" =~ ^[0-9]+$ ]] || ((__port < 1 || __port > 65535)); then
+    printf "Error: Invalid port number '%s'\n" "$__port" >&2
+    printf "Usage: %s [port]\n" "${0##*/}" >&2
+    printf "Starts a Python HTTP server on the specified port (default: 8000).\n" >&2
+    exit 1
+fi
+
+printf "Starting HTTP server at http://localhost:%s\n" "$__port"
+
+exec "$__python" -m http.server "$__port"
