@@ -1,0 +1,63 @@
+#!/usr/bin/env bash
+
+if (( $# == 0 )); then
+    printf 'Usage: %s <text to encode>\n' "$0" >&2
+    exit 1
+fi
+
+input=$*
+encoded=
+length=${#input}
+i=0
+
+while (( i < length )); do
+    c=${input:i:1}
+
+    case $c in
+        [a-zA-Z0-9.~_-])
+            encoded+=$c
+            ;;
+        *)
+            printf -v hex '%%%02X' "'$c"
+            encoded+=$hex
+            ;;
+    esac
+
+    (( i++ ))
+done
+
+url='https://api.qrserver.com/v1/create-qr-code/?size=500x500&data='
+file="/tmp/qr_code$$.png"
+
+printf 'Generating QR code for: %s\n' "$input"
+
+curl -fsS -o "$file" "${url}${encoded}"
+status=$?
+
+if (( status != 0 )); then
+    printf 'Failed to download QR code.\n' >&2
+    exit 2
+fi
+
+if [[ -n ${OSTYPE-} ]]; then
+    case $OSTYPE in
+        darwin*)
+            open "$file"
+            status=$?
+            ;;
+        linux*)
+            xdg-open "$file"
+            status=$?
+            ;;
+        *)
+            status=0
+            ;;
+    esac
+
+    if (( status != 0 )); then
+        printf 'QR code saved to: %s\n' "$file"
+        exit 3
+    fi
+else
+    printf 'QR code saved to: %s\n' "$file"
+fi
