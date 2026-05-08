@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+
+mmain() { :; }
+main() { :; }
+help() { :; }
+_help() { :; }
+
+if [[ -n "${COMP_LINE-}" ]]; then
+    while IFS= read -r __f; do
+        if [[ "${__f:0:1}" != "_" && "${__f:0:${#2}}" == "$2" ]]; then
+            printf "%s\n" "$__f"
+        fi
+    done < <(compgen -A function)
+    exit 0
+fi

@@ -1,0 +1,100 @@
+#!/usr/bin/env bash
+#
+# todo - Project Task Manager
+#
+# A lightweight project-specific task manager that interfaces with 
+# a TODO.md file. It can append tasks, search for TODO comments in 
+# source code, and collect those comments into the central task list.
+#
+
+__version="0.4"
+__name="${0##*/}"
+
+__action="append"
+__filename="TODO.md"
+__header="TODO
+====
+"
+
+if ! command -v git >/dev/null 2>&1 || ! command -v rg >/dev/null 2>&1; then
+	printf "Error: git or rg not found.\n" >&2
+	exit 1
+fi
+
+__project_root=$(git rev-parse --show-toplevel 2>/dev/null)
+__filepath="${__project_root}/${__filename}"
+
+__args=()
+while [[ $# -gt 0 ]]; do
+	case "$1" in
+	-h | --help)
+		printf "%s, version %s\n" "$__name" "$__version"
+		printf "Usage: %s [--file=path] [text ...]\n\n" "$__name"
+		printf "Options:\n"
+		printf "    --file      the path to the todo file\n"
+		printf "    --find      list out all the todo's in directory\n"
+		printf "    --collect   put found todo's into %s\n" "$__filename"
+		printf "    --help      what you are reading now\n"
+		exit 0
+		;;
+	--collect)
+		__action="collect"
+		;;
+	--find)
+		__action="find"
+		;;
+	--file)
+		shift
+		if [[ -z "${1-}" ]]; then
+			printf "Error: --file requires a path\n" >&2
+			exit 1
+		fi
+		__filepath="$1"
+		[[ $# -eq 1 ]] && __action="open"
+		;;
+	*)
+		__args+=("$1")
+		;;
+	esac
+	shift
+done
+
+if [[ ${#__args[@]} -eq 0 && "$__action" == "append" ]]; then
+	__action="open"
+fi
+
+case "$__action" in
+open)
+	${EDITOR:-vi} "$__filepath"
+	;;
+find)
+	rg -i --line-number --no-heading -g"!.git" -g"!$__filename" "#\s*todo:"
+	;;
+collect)
+	__count=0
+	while IFS= read -r __todo; do
+		if ! grep -sqF "$__todo" "$__filepath" 2>/dev/null; then
+			if [[ ! -f "$__filepath" ]]; then
+				[[ "$__filepath" == */* ]] && mkdir -p "${__filepath%/*}"
+				printf "%s\n" "$__header" >"$__filepath"
+			fi
+			printf -- "- [ ] %s\n" "$__todo" >>"$__filepath"
+			((__count++))
+		fi
+	done < <(rg -i --line-number --no-heading -g"!.git" -g"!$__filename" "#\s*todo:")
+	printf "Added %d new todos to %s\n" "$__count" "$__filepath"
+	;;
+append)
+	__msg="${__args[*]}"
+	__dup=""
+	if grep -sqF "$__msg" "$__filepath" 2>/dev/null; then
+		__dup="duplicate task "
+	fi
+	if [[ ! -f "$__filepath" ]]; then
+		[[ "$__filepath" == */* ]] && mkdir -p "${__filepath%/*}"
+		printf "%s\n" "$__header" >"$__filepath"
+	fi
+	printf -- "- [ ] %s\n" "$__msg" >>"$__filepath"
+	printf "Added %sto %s\n" "$__dup" "$__filepath"
+	;;
+esac

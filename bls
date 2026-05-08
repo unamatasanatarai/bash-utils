@@ -1,0 +1,104 @@
+#!/usr/bin/env bash
+#
+# bls - Brew List & Search
+#
+# An interactive command-line utility for browsing, searching, and 
+# installing Homebrew formulae and casks. It uses peco for selection 
+# and provides detailed package information, installation status, 
+# and quick access to homepages.
+#
+
+# bls - Brew List & Search
+__v="1.6"
+__cask_marker="--cask"
+
+# 1. Dependency Checks
+for __dep in brew peco jq; do
+	if ! command -v "$__dep" >/dev/null 2>&1; then
+		printf "Error: %s not found\n" "$__dep" >&2
+		exit 1
+	fi
+done
+
+# 2. Data Loading (Process substitution is efficient for large lists)
+mapfile -t __packages < <(
+	brew formulae
+	brew casks | sed "s/$/ $__cask_marker/"
+)
+
+# 3. Main Interaction Loop (Flat Structure)
+while true; do
+	__selection=$(printf "%s\n" "${__packages[@]}" | peco --prompt "🍺 bls > ")
+
+	if [[ -z "$__selection" ]]; then
+		exit 0
+	fi
+
+	# Parse selection
+	__name="${__selection% $__cask_marker}"
+	__is_cask=0
+	[[ "$__selection" == *" $__cask_marker"* ]] && __is_cask=1
+
+	clear
+	printf "Loading %s info...\n" "$__name"
+
+	# Preview logic (inlined for flat flow)
+	if [[ $__is_cask -eq 1 ]]; then
+		__json=$(brew info --json=v2 --cask "$__name" 2>/dev/null)
+		__root=".casks[0]"
+	else
+		__json=$(brew info --json=v2 "$__name" 2>/dev/null)
+		__root=".formulae[0]"
+	fi
+
+	if [[ -n "$__json" ]]; then
+		clear
+		printf "\n"
+		printf "%s\n" "$__json" | jq -r "
+            $__root |
+            \"====================================\",
+            \"PACKAGE: \(.name // .full_name)\",
+            \"VERSION: \(.version // .versions.stable)\",
+            \"====================================\",
+            \"\",
+            .desc,
+            \"\",
+            \"Homepage: \(.homepage)\",
+            \"\",
+            (if .installed != null and .installed != [] then \"✅ installed\" else \"✗ not installed\" end)
+        "
+	else
+		printf "Error: Could not fetch info for %s\n" "$__name" >&2
+	fi
+
+	# Action Prompt
+	printf "\n[i] install\n[o] open homepage\n[ENTER] continue\n[q] quit\n\n"
+	read -rn1 __action
+	printf "\n"
+
+	case "$__action" in
+	i)
+		printf "Installing %s...\n" "$__name"
+		if [[ $__is_cask -eq 1 ]]; then
+			brew install --cask --no-quarantine "$__name"
+		else
+			brew install --no-quarantine "$__name"
+		fi
+		printf "Done.\n"
+		;;
+	o)
+		if [[ $__is_cask -eq 1 ]]; then
+			__url=$(printf "%s\n" "$__json" | jq -r '.casks[0].homepage')
+		else
+			__url=$(printf "%s\n" "$__json" | jq -r '.formulae[0].homepage')
+		fi
+		[[ -n "$__url" && "$__url" != "null" ]] && open "$__url"
+		;;
+	q)
+		exit 0
+		;;
+	esac
+
+	printf "\n"
+	read -rp "Press ENTER to continue..."
+done

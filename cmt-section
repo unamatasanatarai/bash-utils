@@ -1,0 +1,33 @@
+#!/usr/bin/env bash
+#
+# cmt-section - Section Comment Generator
+#
+# Generates a centered section comment block (e.g., # ---- Title ----)
+# based on a fixed maximum width of 76 characters. It accepts input 
+# from command-line arguments or STDIN.
+#
+
+__text="$*"
+if [[ -z "$__text" ]]; then
+    while IFS= read -r __line || [[ -n "$__line" ]]; do
+        __text="$__line"
+    done </dev/stdin
+fi
+
+if [[ -z "$__text" ]]; then
+    printf "usage:\n   %s text\n   %s stdinput\n" "${0##*/}" "${0##*/}" >&2
+    exit 1
+fi
+
+__len=${#__text}
+__max=76
+__pref_b=$(((__max - __len) / 2 - 1))
+
+printf -v __pref_dashes '%*s' "$((__pref_b + 1))" ''
+__pref_dashes="${__pref_dashes// /-}"
+
+__suff_len=$((__max - (__pref_b + __len + 1)))
+printf -v __suff_dashes '%*s' "$((__suff_len + 1))" ''
+__suff_dashes="${__suff_dashes// /-}"
+
+printf "# %s %s %s\n" "$__pref_dashes" "$__text" "$__suff_dashes"

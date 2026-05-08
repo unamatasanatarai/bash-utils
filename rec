@@ -1,0 +1,56 @@
+#!/usr/bin/env bash
+#
+# rec - Terminal Session Recorder (asciinema wrapper)
+#
+# A wrapper for asciinema that automates recording terminal sessions. 
+# It generates sanitized, timestamped filenames, records the 
+# session, and provides an optional upload step.
+#
+
+if [[ -z "${1-}" ]]; then
+    printf "usage: %s The title for your asciiart\n" "${0##*/}" >&2
+    exit 1
+fi
+
+__title="$*"
+__filename="${__title,,}"
+
+shopt -s extglob
+__filename="${__filename//+([^a-z0-9_-])/-}"
+__filename="${__filename//+(-)/-}"
+shopt -u extglob
+
+printf -v __ts '%(%Y%m%d%H%M)T' -1
+__filename="${__filename}-${__ts}.cast"
+
+if ! command -v asciinema >/dev/null 2>&1; then
+    printf "Error: asciinema not found.\n" >&2
+    exit 1
+fi
+
+asciinema rec -t "$__title" "$__filename"
+if [[ $? -ne 0 ]]; then
+    printf "Error: asciinema recording failed.\n" >&2
+    exit 1
+fi
+
+printf "Should I upload it for you as well? [N/y] "
+read -r __ans
+
+if [[ "${__ans:0:1}" == [yY] ]]; then
+    __response=$(asciinema upload "$__filename" 2>&1)
+
+    if [[ "$__response" =~ (https://[^[:space:]]+) ]]; then
+        __url="${BASH_REMATCH[1]}"
+
+        if command -v open >/dev/null 2>&1; then
+            open "$__url"
+        fi
+
+        printf "Uploaded to: %s\n" "$__url"
+    else
+        printf "Error: Could not extract upload URL.\n" >&2
+        printf "Response: %s\n" "$__response" >&2
+        exit 1
+    fi
+fi

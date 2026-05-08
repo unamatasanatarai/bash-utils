@@ -1,0 +1,36 @@
+#!/usr/bin/env bash
+#
+# cmt-title - Boxed Title Comment Generator
+#
+# Generates a large, boxed title comment block for shell scripts 
+# or configuration files. It centers the provided text within a 
+# 72-character wide box.
+#
+
+__text="$*"
+if [[ -z "$__text" ]]; then
+    while IFS= read -r __line || [[ -n "$__line" ]]; do
+        __text="$__line"
+    done </dev/stdin
+fi
+
+if [[ -z "$__text" ]]; then
+    printf "usage:\n   %s text\n   %s STDIN (ctrl+d to commit)\n" "${0##*/}" "${0##*/}" >&2
+    exit 1
+fi
+
+__len=${#__text}
+__max=72
+__pref_b=$(((__max - __len) / 2 - 1))
+
+printf -v __dashes '%*s' "$((__max + 3))" ''
+__dashes="${__dashes// /-}"
+
+printf -v __pref_dashes '%*s' "$((__pref_b + 1))" ''
+__pref_dashes="${__pref_dashes// /-}"
+
+__suff_len=$((__max - (__pref_b + __len + 1)))
+printf -v __suff_dashes '%*s' "$((__suff_len + 1))" ''
+__suff_dashes="${__suff_dashes// /-}"
+
+printf "# %s\n# %s %s %s\n# %s\n" "$__dashes" "$__pref_dashes" "$__text" "$__suff_dashes" "$__dashes"

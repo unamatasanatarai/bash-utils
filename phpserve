@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+#
+# phpserve - PHP Built-in Server Launcher
+#
+# A convenience wrapper for the PHP built-in web server. It starts 
+# a server on localhost with a specified port (defaulting to 8181) 
+# and performs basic port validation.
+#
+
+if ! command -v php >/dev/null 2>&1; then
+    printf "Error: PHP is not installed or not in PATH.\n" >&2
+    exit 1
+fi
+
+__port="${1:-8181}"
+
+if ! [[ "$__port" =~ ^[0-9]+$ ]] || ((__port < 1 || __port > 65535)); then
+    printf "Error: Invalid port number '%s'\n" "$__port" >&2
+    printf "Usage: %s [port]\n" "${0##*/}" >&2
+    printf "Starts a PHP built-in server on the specified port (default: 8181).\n" >&2
+    exit 1
+fi
+
+printf "Starting PHP server at http://localhost:%s\n" "$__port"
+
+exec php -S "localhost:$__port"

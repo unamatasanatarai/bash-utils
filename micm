@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+#
+# micm - Microphone Mute Toggle
+#
+# A macOS-specific utility that toggles the system microphone input 
+# volume between 0 and 100. It uses AppleScript (osascript) to 
+# perform the toggle and displays a system notification.
+#
+
+if ! command -v osascript >/dev/null 2>&1; then
+	printf "Error: osascript not found.\n" >&2
+	exit 1
+fi
+
+osascript <<'EOF'
+set curVol to input volume of (get volume settings)
+if curVol < 20 then
+	set volume input volume 100
+	display notification "Microphone turned on" with title "🔊"
+else
+	set volume input volume 0
+	display notification "Microphone turned off" with title "🔇"
+end if
+EOF

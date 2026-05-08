@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+
+__append=""
+
+while IFS= read -r __line || [[ -n "$__line" ]]; do
+    if [[ -z "$__append" ]]; then
+        [[ "${__line:0:1}" == "#" ]] && __append="false" || __append="true"
+    fi
+
+    if [[ "$__append" == "true" ]]; then
+        printf "# %s\n" "$__line"
+    else
+        __temp="${__line#\#}"
+        printf "%s\n" "${__temp# }"
+    fi
+done <"${1:-/dev/stdin}"

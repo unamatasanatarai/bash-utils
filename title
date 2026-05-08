@@ -1,0 +1,53 @@
+#!/usr/bin/env bash
+#
+# title - Large ASCII Art Title Generator
+#
+# Displays text in large ASCII art format using figlet. It supports 
+# random font selection from a curated list and allows overriding 
+# the font via the TITLE_FONT environment variable.
+#
+
+fonts=(
+    "ANSI Regular"
+    "Bloody"
+    "Calvin S"
+    "Cybermedium"
+    "DOS Rebel"
+    "Delta Corps Priest 1"
+    "Future"
+    "Lean"
+    "Stick Letters"
+)
+
+font_dir="$HOME/.local/share/figlet"
+
+if [[ -z "${1-}" ]]; then
+    printf "usage: title 'Title to display'\n" >&2
+    exit 1
+fi
+
+if ! command -v figlet >/dev/null 2>&1; then
+    printf "Error: figlet not found.\n" >&2
+    exit 1
+fi
+
+if [[ ! -d "$font_dir" ]]; then
+    printf "Missing fonts!\n" >&2
+    printf "Download from:  https://github.com/xero/figlet-fonts.git\n" >&2
+    printf "to:             %s\n\n" "$font_dir" >&2
+    printf "mkdir -p %s\n" "$font_dir" >&2
+    printf "cd %s\n" "$font_dir" >&2
+    printf "git clone https://github.com/xero/figlet-fonts.git .\n" >&2
+    exit 1
+fi
+
+if [[ -n "${TITLE_FONT-}" ]]; then
+    __font="$TITLE_FONT"
+else
+    __num=$((RANDOM % ${#fonts[@]}))
+    __font="${fonts[__num]}"
+fi
+
+__cols=$(tput cols 2>/dev/null || printf "80")
+
+exec figlet -f "$__font" -w "$__cols" -c -d "$font_dir" "$*"
