@@ -2,8 +2,8 @@
 #
 # rec - Terminal Session Recorder (asciinema wrapper)
 #
-# A wrapper for asciinema that automates recording terminal sessions. 
-# It generates sanitized, timestamped filenames, records the 
+# A wrapper for asciinema that automates recording terminal sessions.
+# It generates sanitized, timestamped filenames, records the
 # session, and provides an optional upload step.
 #
 

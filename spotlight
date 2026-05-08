@@ -2,36 +2,36 @@
 #
 # spotlight - Interactive Application/Script Launcher
 #
-# A fuzzy-search based launcher that allows quick access to 
-# common applications and custom scripts. It uses peco for 
+# A fuzzy-search based launcher that allows quick access to
+# common applications and custom scripts. It uses peco for
 # selection and provides a modular structure for adding actions.
 #
 
 __v="1.1"
 
 if ! command -v peco >/dev/null 2>&1; then
-	printf "Error: peco not found\n" >&2
-	exit 1
+    printf "Error: peco not found\n" >&2
+    exit 1
 fi
 
 # Choices for selection
 __choices=(
-	"Brave"
+    "Brave"
 )
 
 # Fork justified for interactive selection
 __cmd=$(printf "%s\n" "${__choices[@]}" | peco --prompt="►▶ ")
 
 if [[ -z "$__cmd" ]]; then
-	exit 1
+    exit 1
 fi
 
 case "$__cmd" in
 "Brave")
-	open -a 'Brave Browser'
-	;;
+    open -a 'Brave Browser'
+    ;;
 *)
-	printf "Error: Unknown command: %s\n" "$__cmd" >&2
-	exit 1
-	;;
+    printf "Error: Unknown command: %s\n" "$__cmd" >&2
+    exit 1
+    ;;
 esac

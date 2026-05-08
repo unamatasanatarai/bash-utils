@@ -2,8 +2,8 @@
 #
 # phpserve - PHP Built-in Server Launcher
 #
-# A convenience wrapper for the PHP built-in web server. It starts 
-# a server on localhost with a specified port (defaulting to 8181) 
+# A convenience wrapper for the PHP built-in web server. It starts
+# a server on localhost with a specified port (defaulting to 8181)
 # and performs basic port validation.
 #
 

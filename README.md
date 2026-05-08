@@ -36,15 +36,19 @@ A collection of high-performance, Pure Bash utility scripts designed to enhance 
 
 ## Installation
 
-1.  Clone the repository to your local machine:
-    ```bash
-    git clone https://github.com/your-username/bash-utils.git
-    ```
-2.  Add the script directory to your system `PATH`:
-    ```bash
-    export PATH="$PATH:/path/to/bash-utils"
-    ```
-3.  Ensure the required dependencies are installed via Homebrew:
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/your-username/bash-utils.git
+   cd bash-utils
+   ```
+2. Run the installation script:
+   ```bash
+   ./install.sh
+   ```
+
+The script will install the utilities to `~/.local/bin` and notify you if you need to update your `PATH`.
+
+3. Ensure the required dependencies are installed via Homebrew:
     ```bash
     brew install peco jq figlet asciinema
     ```

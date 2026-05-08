@@ -2,8 +2,8 @@
 #
 # title - Large ASCII Art Title Generator
 #
-# Displays text in large ASCII art format using figlet. It supports 
-# random font selection from a curated list and allows overriding 
+# Displays text in large ASCII art format using figlet. It supports
+# random font selection from a curated list and allows overriding
 # the font via the TITLE_FONT environment variable.
 #
 

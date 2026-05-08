@@ -2,9 +2,9 @@
 #
 # calendar - Interactive TUI Calendar
 #
-# A lightweight terminal-based calendar that allows for interactive 
-# navigation between months and years using keyboard shortcuts. 
-# It uses the system 'cal' command for rendering and 'tput' for 
+# A lightweight terminal-based calendar that allows for interactive
+# navigation between months and years using keyboard shortcuts.
+# It uses the system 'cal' command for rendering and 'tput' for
 # cursor management.
 #
 
@@ -24,36 +24,36 @@ printf "\nControls: h/l = prev/next month | t = today | q/esc = quit"
 
 # Interactive Loop
 while read -rsn1 __key; do
-	case "$__key" in
-	q | Q | $'\e')
-		exit 0
-		;;
-	h | H)
-		__m=$((__m - 1))
-		if [[ "$__m" -lt 1 ]]; then
-			__m=12
-			__y=$((__y - 1))
-		fi
-		;;
-	l | L)
-		__m=$((__m + 1))
-		if [[ "$__m" -gt 12 ]]; then
-			__m=1
-			__y=$((__y + 1))
-		fi
-		;;
-	t | T)
-		printf -v __m "%(%m)T" -1
-		printf -v __y "%(%Y)T" -1
-		__m="${__m#0}"
-		;;
-	*)
-		continue
-		;;
-	esac
+    case "$__key" in
+    q | Q | $'\e')
+        exit 0
+        ;;
+    h | H)
+        __m=$((__m - 1))
+        if [[ "$__m" -lt 1 ]]; then
+            __m=12
+            __y=$((__y - 1))
+        fi
+        ;;
+    l | L)
+        __m=$((__m + 1))
+        if [[ "$__m" -gt 12 ]]; then
+            __m=1
+            __y=$((__y + 1))
+        fi
+        ;;
+    t | T)
+        printf -v __m "%(%m)T" -1
+        printf -v __y "%(%Y)T" -1
+        __m="${__m#0}"
+        ;;
+    *)
+        continue
+        ;;
+    esac
 
-	# Render update
-	clear
-	cal "$__m" "$__y"
-	printf "\nControls: h/l = prev/next month | t = today | q/esc = quit"
+    # Render update
+    clear
+    cal "$__m" "$__y"
+    printf "\nControls: h/l = prev/next month | t = today | q/esc = quit"
 done

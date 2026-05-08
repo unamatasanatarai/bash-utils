@@ -2,16 +2,16 @@
 #
 # ttw - Trailing Trim Whitespace
 #
-# A Pure Bash utility that removes trailing whitespace from every 
-# line of a file or STDIN. It uses internal string manipulation 
+# A Pure Bash utility that removes trailing whitespace from every
+# line of a file or STDIN. It uses internal string manipulation
 # to ensure high performance without external dependencies.
 #
 
 if [[ -n "${1-}" && ! -f "$1" ]]; then
-	printf "Error: file not found: %s\n" "$1" >&2
-	exit 1
+    printf "Error: file not found: %s\n" "$1" >&2
+    exit 1
 fi
 
 while IFS= read -r line || [[ -n "$line" ]]; do
-	printf "%s\n" "${line%"${line##*[![:space:]]}"}"
+    printf "%s\n" "${line%"${line##*[![:space:]]}"}"
 done <"${1:-/dev/stdin}"

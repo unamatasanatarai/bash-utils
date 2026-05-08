@@ -3,7 +3,7 @@
 # cmt-section - Section Comment Generator
 #
 # Generates a centered section comment block (e.g., # ---- Title ----)
-# based on a fixed maximum width of 76 characters. It accepts input 
+# based on a fixed maximum width of 76 characters. It accepts input
 # from command-line arguments or STDIN.
 #
 

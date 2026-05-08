@@ -10,15 +10,15 @@
 __version="1.0"
 
 if ! command -v peco >/dev/null 2>&1 || ! command -v ps >/dev/null 2>&1; then
-	printf "Error: peco or ps not found.\n" >&2
-	exit 1
+    printf "Error: peco or ps not found.\n" >&2
+    exit 1
 fi
 
 __selection=$(ps -e | peco --prompt "ps -e >> ")
 
 if [[ -n "$__selection" ]]; then
-	read -r __pid _ <<<"$__selection"
-	if [[ -n "$__pid" && "$__pid" =~ ^[0-9]+$ ]]; then
-		printf "%s\n" "$__pid"
-	fi
+    read -r __pid _ <<<"$__selection"
+    if [[ -n "$__pid" && "$__pid" =~ ^[0-9]+$ ]]; then
+        printf "%s\n" "$__pid"
+    fi
 fi

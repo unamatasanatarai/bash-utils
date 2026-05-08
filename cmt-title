@@ -2,8 +2,8 @@
 #
 # cmt-title - Boxed Title Comment Generator
 #
-# Generates a large, boxed title comment block for shell scripts 
-# or configuration files. It centers the provided text within a 
+# Generates a large, boxed title comment block for shell scripts
+# or configuration files. It centers the provided text within a
 # 72-character wide box.
 #
 

@@ -2,8 +2,8 @@
 #
 # popup - Centered Alacritty Terminal Popup
 #
-# Launches a command in a centered, full-width Alacritty terminal 
-# window. It automatically detects the screen resolution on macOS 
+# Launches a command in a centered, full-width Alacritty terminal
+# window. It automatically detects the screen resolution on macOS
 # to calculate appropriate window dimensions and font-based sizing.
 #
 
@@ -15,21 +15,21 @@ __base_height=10
 __def_font_width=8
 
 while getopts "h" __opt; do
-	case "$__opt" in
-	h)
-		printf "Usage: %s <command>\n" "${0##*/}"
-		exit 0
-		;;
-	*)
-		exit 1
-		;;
-	esac
+    case "$__opt" in
+    h)
+        printf "Usage: %s <command>\n" "${0##*/}"
+        exit 0
+        ;;
+    *)
+        exit 1
+        ;;
+    esac
 done
 shift $((OPTIND - 1))
 
 if [[ $# -lt 1 ]]; then
-	printf "Error: Command is required.\n" >&2
-	exit 1
+    printf "Error: Command is required.\n" >&2
+    exit 1
 fi
 
 # Quote the command for execution
@@ -39,8 +39,8 @@ __cmd=$(printf "%q " "$@")
 # system_profiler is slow but unavoidable on macOS
 __info=$(system_profiler SPDisplaysDataType)
 if [[ $? -ne 0 || -z "$__info" ]]; then
-	printf "Error: Unable to determine screen width\n" >&2
-	exit 1
+    printf "Error: Unable to determine screen width\n" >&2
+    exit 1
 fi
 
 # Extract resolution using parameter expansion
@@ -51,19 +51,19 @@ __res="${__res#"${__res%%[![:space:]]*}"}"
 __width_px="${__res%% *}"
 
 if [[ -z "$__width_px" || ! "$__width_px" =~ ^[0-9]+$ ]]; then
-	printf "Error: Invalid screen width detected\n" >&2
-	exit 1
+    printf "Error: Invalid screen width detected\n" >&2
+    exit 1
 fi
 
 __cols=$((__width_px / __def_font_width))
 __rows=$((__base_height * __spacing))
 
 exec alacritty \
-	-t "$__title" \
-	--class "$__title" \
-	-o window.position.x=0 \
-	-o window.position.y=0 \
-	-o window.dimensions.columns="$__cols" \
-	-o window.dimensions.lines="$__rows" \
-	--working-directory "$PWD" \
-	-e bash -c "$__cmd"
+    -t "$__title" \
+    --class "$__title" \
+    -o window.position.x=0 \
+    -o window.position.y=0 \
+    -o window.dimensions.columns="$__cols" \
+    -o window.dimensions.lines="$__rows" \
+    --working-directory "$PWD" \
+    -e bash -c "$__cmd"
