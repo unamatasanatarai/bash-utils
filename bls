@@ -80,9 +80,9 @@ while true; do
     i)
         printf "Installing %s...\n" "$__name"
         if [[ $__is_cask -eq 1 ]]; then
-            brew install --cask --no-quarantine "$__name"
+            brew install --cask "$__name"
         else
-            brew install --no-quarantine "$__name"
+            brew install "$__name"
         fi
         printf "Done.\n"
         ;;
