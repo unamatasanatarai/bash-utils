@@ -28,7 +28,7 @@ mapfile -t __packages < <(
 
 # 3. Main Interaction Loop (Flat Structure)
 while true; do
-    __selection=$(printf "%s\n" "${__packages[@]}" | peco --prompt "🍺 bls > ")
+    __selection=$(printf "%s\n" "${__packages[@]}" | peco --prompt "🍺 bls > " --query "${1:-}")
 
     if [[ -z "$__selection" ]]; then
         exit 0
