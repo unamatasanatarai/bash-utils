@@ -19,7 +19,7 @@ if [[ ! -d "$__target" ]]; then
 fi
 
 # Iterate files using globbing
-for __file in "${__dir}"/*; do
+for __file in "${__dir}"/src/*; do
     # Skip directories
     [[ -d "$__file" ]] && continue
 
