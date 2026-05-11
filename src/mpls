@@ -1,0 +1,105 @@
+#!/usr/bin/env bash
+#
+# mpls - MacPorts List & Search
+#
+# An interactive command-line utility for browsing, searching, and
+# installing MacPorts ports. It uses peco for selection and provides
+# detailed package information, installation status, and quick access
+# to homepages.
+#
+
+# mpls - MacPorts List & Search
+__v="1.0"
+
+# 1. Dependency Checks
+for __dep in port peco; do
+    if ! command -v "$__dep" >/dev/null 2>&1; then
+        printf "Error: %s not found\n" "$__dep" >&2
+        exit 1
+    fi
+done
+
+# 2. Data Loading
+mapfile -t __packages < <(
+    port list | awk '{print $1}'
+)
+
+# 3. Main Interaction Loop
+while true; do
+    __selection=$(printf "%s\n" "${__packages[@]}" | peco --prompt "📦 mpls > " --query "${1:-}")
+
+    if [[ -z "$__selection" ]]; then
+        exit 0
+    fi
+
+    __name="$__selection"
+
+    clear
+    printf "Loading %s info...\n" "$__name"
+
+    # Fetch package info
+    __info=$(port info "$__name" 2>/dev/null)
+    __installed=0
+
+    if port installed "$__name" | grep -q "(active)"; then
+        __installed=1
+    fi
+
+    if [[ -n "$__info" ]]; then
+        clear
+        printf "\n"
+        printf "====================================\n"
+        printf "PACKAGE: %s\n" "$__name"
+
+        __version=$(printf "%s\n" "$__info" | awk -F': ' '/^Version:/ {print $2}')
+        printf "VERSION: %s\n" "${__version:-unknown}"
+
+        printf "====================================\n\n"
+
+        __desc=$(printf "%s\n" "$__info" | awk -F': ' '
+            /^Description:/ {
+                sub(/^Description: /, "")
+                print
+            }
+        ')
+        printf "%s\n\n" "$__desc"
+
+        __homepage=$(printf "%s\n" "$__info" | awk -F': ' '/^Homepage:/ {print $2}')
+        printf "Homepage: %s\n\n" "${__homepage:-N/A}"
+
+        if [[ $__installed -eq 1 ]]; then
+            printf "✅ installed\n"
+        else
+            printf "✗ not installed\n"
+        fi
+    else
+        printf "Error: Could not fetch info for %s\n" "$__name" >&2
+    fi
+
+    # Action Prompt
+    printf "\n[i] install\n[o] open homepage\n[u] uninstall\n[ENTER] continue\n[q] quit\n\n"
+    read -rn1 __action
+    printf "\n"
+
+    case "$__action" in
+    i)
+        printf "Installing %s...\n" "$__name"
+        sudo port install "$__name"
+        printf "Done.\n"
+        ;;
+    u)
+        printf "Uninstalling %s...\n" "$__name"
+        sudo port uninstall "$__name"
+        printf "Done.\n"
+        ;;
+    o)
+        [[ -n "$__homepage" && "$__homepage" != "N/A" ]] && open "$__homepage"
+        ;;
+    q)
+        exit 0
+        ;;
+    esac
+
+    printf "\n"
+    read -rp "Press ENTER to continue..."
+done
