@@ -14,7 +14,7 @@ if ! command -v peco >/dev/null 2>&1 || ! command -v ps >/dev/null 2>&1; then
     exit 1
 fi
 
-__selection=$(ps -e | peco --prompt "ps -e >> ")
+__selection=$(ps -eo pid,user,%cpu,%mem,command | peco --prompt ">" --query "$*")
 
 if [[ -n "$__selection" ]]; then
     read -r __pid _ <<<"$__selection"
