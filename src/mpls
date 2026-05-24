@@ -11,10 +11,10 @@ __v="1.0"
 
 # 1. Dependency Checks
 for __dep in port peco; do
-	if ! command -v "$__dep" >/dev/null 2>&1; then
-		printf "Error: %s not found\n" "$__dep" >&2
-		exit 1
-	fi
+    if ! command -v "$__dep" >/dev/null 2>&1; then
+        printf "Error: %s not found\n" "$__dep" >&2
+        exit 1
+    fi
 done
 
 # 2. Data Loading
@@ -23,110 +23,110 @@ trap 'rm -f "$__tmp_list"' EXIT
 
 # Load names into temp file to avoid subshell and pipeline overhead in main loop
 port list | while read -r __name _; do
-	[[ -n "$__name" ]] && printf "%s\n" "$__name"
+    [[ -n "$__name" ]] && printf "%s\n" "$__name"
 done >"$__tmp_list"
 
 # 3. Main Interaction Loop
 while true; do
-	__selection=$(peco --prompt "mpls > " --query "${1:-}" <"$__tmp_list")
+    __selection=$(peco --prompt "mpls > " --query "${1:-}" <"$__tmp_list")
 
-	# Clear query after first run
-	set --
+    # Clear query after first run
+    set --
 
-	if [[ -z "$__selection" ]]; then
-		exit 0
-	fi
+    if [[ -z "$__selection" ]]; then
+        exit 0
+    fi
 
-	__name="$__selection"
+    __name="$__selection"
 
-	# Fetch package info once
-	__info_raw=$(port info "$__name" 2>/dev/null)
+    # Fetch package info once
+    __info_raw=$(port info "$__name" 2>/dev/null)
 
-	if [[ -z "$__info_raw" ]]; then
-		printf "Error: Could not fetch info for %s\n" "$__name" >&2
-		continue
-	fi
+    if [[ -z "$__info_raw" ]]; then
+        printf "Error: Could not fetch info for %s\n" "$__name" >&2
+        continue
+    fi
 
-	# Parse info using Pure Bash
-	__version=""
-	__desc=""
-	__homepage=""
-	__in_desc=0
+    # Parse info using Pure Bash
+    __version=""
+    __desc=""
+    __homepage=""
+    __in_desc=0
 
-	while IFS= read -r __line; do
-		if [[ -z "$__version" ]]; then
-			# Extract version from first line
-			read -r _ __version _ <<<"$__line"
-		fi
+    while IFS= read -r __line; do
+        if [[ -z "$__version" ]]; then
+            # Extract version from first line
+            read -r _ __version _ <<<"$__line"
+        fi
 
-		case "$__line" in
-		Description:*)
-			__desc="${__line#Description:}"
-			__desc="${__desc#"${__desc%%[![:space:]]*}"}"
-			__in_desc=1
-			;;
-		Homepage:*)
-			__homepage="${__line#Homepage:}"
-			__homepage="${__homepage#"${__homepage%%[![:space:]]*}"}"
-			__in_desc=0
-			;;
-		[A-Z]*:*)
-			__in_desc=0
-			;;
-		*)
-			if [[ $__in_desc -eq 1 && -n "$__line" ]]; then
-				__trimmed="${__line#"${__line%%[![:space:]]*}"}"
-				__desc="$__desc $__trimmed"
-			fi
-			;;
-		esac
-	done <<<"$__info_raw"
+        case "$__line" in
+        Description:*)
+            __desc="${__line#Description:}"
+            __desc="${__desc#"${__desc%%[![:space:]]*}"}"
+            __in_desc=1
+            ;;
+        Homepage:*)
+            __homepage="${__line#Homepage:}"
+            __homepage="${__homepage#"${__homepage%%[![:space:]]*}"}"
+            __in_desc=0
+            ;;
+        [A-Z]*:*)
+            __in_desc=0
+            ;;
+        *)
+            if [[ $__in_desc -eq 1 && -n "$__line" ]]; then
+                __trimmed="${__line#"${__line%%[![:space:]]*}"}"
+                __desc="$__desc $__trimmed"
+            fi
+            ;;
+        esac
+    done <<<"$__info_raw"
 
-	# Check installation status
-	__installed_raw=$(port installed "$__name" 2>/dev/null)
-	__installed=0
-	[[ "$__installed_raw" == *"(active)"* ]] && __installed=1
+    # Check installation status
+    __installed_raw=$(port installed "$__name" 2>/dev/null)
+    __installed=0
+    [[ "$__installed_raw" == *"(active)"* ]] && __installed=1
 
-	# Output Display
-	printf "\nPACKAGE: %s\n" "$__name"
-	printf "VERSION: %s\n\n" "${__version:-unknown}"
-	printf "%s\n\n" "${__desc:-No description available.}"
-	printf "Homepage: %s\n" "${__homepage:-N/A}"
+    # Output Display
+    printf "\nPACKAGE: %s\n" "$__name"
+    printf "VERSION: %s\n\n" "${__version:-unknown}"
+    printf "%s\n\n" "${__desc:-No description available.}"
+    printf "Homepage: %s\n" "${__homepage:-N/A}"
 
-	if [[ $__installed -eq 1 ]]; then
-		printf "Status:   installed\n"
-	else
-		printf "Status:   not installed\n"
-	fi
+    if [[ $__installed -eq 1 ]]; then
+        printf "Status:   installed\n"
+    else
+        printf "Status:   not installed\n"
+    fi
 
-	# Action Prompt
-	printf "\n[i] install  [o] open homepage  [u] uninstall  [q] quit  [ENTER] back\n"
-	read -rn1 __action
-	printf "\n"
+    # Action Prompt
+    printf "\n[i] install  [o] open homepage  [u] uninstall  [q] quit  [ENTER] back\n"
+    read -rn1 __action
+    printf "\n"
 
-	case "$__action" in
-	i)
-		printf "Installing %s...\n" "$__name"
-		sudo port install "$__name"
-		;;
-	u)
-		printf "Uninstalling %s...\n" "$__name"
-		sudo port uninstall "$__name"
-		;;
-	o)
-		if [[ -n "$__homepage" && "$__homepage" != "N/A" ]]; then
-			open "$__homepage"
-		else
-			printf "Error: No homepage URL found for %s\n" "$__name" >&2
-		fi
-		;;
-	q)
-		exit 0
-		;;
-	esac
+    case "$__action" in
+    i)
+        printf "Installing %s...\n" "$__name"
+        sudo port install "$__name"
+        ;;
+    u)
+        printf "Uninstalling %s...\n" "$__name"
+        sudo port uninstall "$__name"
+        ;;
+    o)
+        if [[ -n "$__homepage" && "$__homepage" != "N/A" ]]; then
+            open "$__homepage"
+        else
+            printf "Error: No homepage URL found for %s\n" "$__name" >&2
+        fi
+        ;;
+    q)
+        exit 0
+        ;;
+    esac
 
-	if [[ "$__action" == [iuo] ]]; then
-		printf "\nPress ENTER to continue..."
-		read -r
-	fi
+    if [[ "$__action" == [iuo] ]]; then
+        printf "\nPress ENTER to continue..."
+        read -r
+    fi
 done
