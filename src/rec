@@ -29,4 +29,5 @@ asciinema rec -t "$title" "$file" || exit
 read -rp "Upload? [y/N] " yn
 [[ $yn =~ ^[Yy]$ ]] || exit
 
+export ASCIINEMA_API_URL=https://asciinema.org
 asciinema upload "$file"
