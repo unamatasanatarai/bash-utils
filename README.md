@@ -1,86 +1,194 @@
 # Bash Utils
 
 ![Bash](https://img.shields.io/badge/Language-Bash-4EAA25?logo=gnu-bash&logoColor=white)
-![Platform](https://img.shields.io/badge/Platform-macOS-000000?logo=apple&logoColor=white)
+![macOS](https://img.shields.io/badge/Platform-macOS-000000?logo=apple&logoColor=white)
+![Homebrew](https://img.shields.io/badge/Homebrew-supported-FBB040?logo=homebrew&logoColor=black)
+![MacPorts](https://img.shields.io/badge/MacPorts-supported-1F5FAA)
+![Python](https://img.shields.io/badge/Python-http.server-3776AB?logo=python&logoColor=white)
+![PHP](https://img.shields.io/badge/PHP-built--in_server-777BB4?logo=php&logoColor=white)
+![jq](https://img.shields.io/badge/jq-required-5E97D0)
+![peco](https://img.shields.io/badge/peco-required-555555)
 
-A collection of high-performance, Pure Bash utility scripts designed to enhance the macOS terminal experience. These tools focus on flat execution flows and minimal process forks to provide a fast, responsive interface for package management, process selection, and development workflows.
+Bash Utils is a collection of standalone Bash command-line utilities for macOS-oriented terminal workflows. The repository includes interactive package search tools, local development server wrappers, text formatting helpers, process and task utilities, and small system helpers that can be installed into a user-local bin directory.
 
 ## Features
 
-- **Interactive Package Management**: Browse, search, and install Homebrew formulae and casks via `bls`.
-- **System Utilities**: Interactive TUI calendar, process selector, and macOS-specific microphone mute toggle.
-- **Development Enhancements**: PHP built-in server wrapper, trailing whitespace trimmer, and terminal session recording via `asciinema`.
-- **UI & Layout**: Centered Alacritty terminal popup launcher with automatic screen resolution detection.
-- **Comment & Documentation**: Stylized section and title comment generators for cleaner code documentation.
-- **Task Management**: Project-level TODO management that can collect tasks from source code into a central `TODO.md`.
+- Browse Homebrew formulae and casks with `bls`, view package metadata, install selections, and open package homepages.
+- Browse MacPorts ports with `mpls`, view package metadata, install or uninstall selections, and open package homepages.
+- Start local static file servers with `pyserve` and PHP built-in servers with `phpserve`.
+- Toggle the macOS microphone input volume with `micm`.
+- Open a centered Alacritty command popup with `popup`.
+- Navigate a terminal calendar with `calendar`.
+- Select running processes and print the selected PID with `psls`.
+- Record terminal sessions with `rec`, including an optional asciinema upload.
+- Generate QR codes from text with `qr`.
+- Manage project TODO files with `todo`, including appending, searching source comments, and collecting TODO comments.
+- Generate shell comment blocks with `cmt`, `cmt-section`, and `cmt-title`.
+- Trim trailing whitespace from a file or standard input with `ttw`.
+- Render centered figlet titles with `title`.
+- List shell function completion candidates from `COMP_LINE` with `cmpltn`.
 
 ## Tech Stack
 
-- **Core**: Bash (Optimized for Pure Bash performance)
-- **Fuzzy Selectors**: `peco`, `fzf`
-- **Data Processing**: `jq`, `sed`
-- **Terminal & UI**: `alacritty`, `tput`, `figlet`
-- **Integrations**: `brew`, `asciinema`, `osascript` (AppleScript), `php`
+### Core
+
+- Bash
+
+### macOS Integrations
+
+- `osascript` for microphone volume control and notifications
+- `open` for opening applications, package homepages, and generated files
+- `system_profiler` for display resolution detection in `popup`
+- Alacritty for terminal popup windows
+
+### Package Managers
+
+- Homebrew via `brew`
+- MacPorts via `port`
+
+### CLI Dependencies
+
+- `peco`
+- `jq`
+- `rg`
+- `figlet`
+- `asciinema`
+- `curl`
+- `cal`
+- `tput`
+- `ps`
+- `sed`
+
+### Development Server Runtimes
+
+- Python through `python3` or `python`
+- PHP through `php`
 
 ## Project Structure
 
-- `bls`: Brew List & Search interactive utility.
-- `calendar`: TUI-based interactive calendar with month navigation.
-- `popup`: Centered Alacritty window launcher with auto-resizing logic.
-- `todo`: Task manager for project-specific `TODO.md` files.
-- `psls`: Interactive process selector and PID viewer.
-- `spotlight`: Fuzzy-search based application and custom script launcher.
-- `micm`: macOS microphone mute toggle with system notifications.
-- `ttw`: Pure Bash trailing whitespace trimmer.
-- `spotlight_commands/`: Directory containing modular actions for the `spotlight` utility.
+```text
+install.sh       Installs every file in src/ into the user bin directory
+src/bls          Interactive Homebrew formula and cask browser
+src/calendar     Interactive terminal calendar
+src/cmt          Toggle comment prefixes for stdin or a file
+src/cmt-section  Generate centered section comments
+src/cmt-title    Generate boxed title comments
+src/cmpltn       Function-name completion helper
+src/micm         macOS microphone mute toggle
+src/mpls         Interactive MacPorts browser
+src/phpserve     PHP built-in server launcher
+src/popup        Centered Alacritty command popup launcher
+src/psls         Interactive process selector
+src/pyserve      Python HTTP server launcher
+src/qr           QR code generator using api.qrserver.com
+src/rec          asciinema recording wrapper
+src/spotlight    peco-based launcher for Brave Browser
+src/title        figlet title renderer
+src/todo         Project TODO.md manager
+src/ttw          Trailing whitespace trimmer
+```
 
 ## Installation
 
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/your-username/bash-utils.git
-   cd bash-utils
-   ```
-2. Run the installation script:
-   ```bash
-   ./install.sh
-   ```
+Clone the repository and run the installer:
 
-The script will install the utilities to `~/.local/bin` and notify you if you need to update your `PATH`.
+```bash
+git clone git@github.com:unamatasanatarai/bash-utils.git
+cd bash-utils
+./install.sh
+```
 
-3. Ensure the required dependencies are installed via Homebrew:
-    ```bash
-    brew install peco jq figlet asciinema
-    ```
+By default, `install.sh` copies every executable file from `src/` into:
+
+```bash
+~/.local/bin
+```
+
+To install into a different user bin directory, set `XDG_BIN_HOME`:
+
+```bash
+XDG_BIN_HOME="$HOME/bin" ./install.sh
+```
+
+If the target directory is not in `PATH`, the installer prints the shell export line to add.
 
 ## Usage
 
-Most scripts can be run directly from the terminal without additional configuration.
+### Package Browsers
 
-### Interactive Brew Search
 ```bash
 bls
+mpls
 ```
 
-### Terminal Popup
-Launch any command in a centered Alacritty popup:
-```bash
-popup htop
-```
+`bls` requires `brew`, `peco`, and `jq`. `mpls` requires `port` and `peco`.
 
-### PHP Development Server
-Start a server on a custom port (default: 8181):
+### Local Development Servers
+
 ```bash
+pyserve
+pyserve 9000
+
+phpserve
 phpserve 8080
 ```
 
-### Recording Terminal Sessions
+`pyserve` defaults to port `8000`. `phpserve` defaults to port `8181`. Both commands validate that the provided port is between `1` and `65535`.
+
+### Text and Comment Utilities
+
 ```bash
-rec "My Session Title"
+ttw path/to/file
+printf 'section name\n' | cmt-section
+cmt-title "Project Setup"
+title "Build Complete"
 ```
+
+`ttw` reads from a file argument or standard input. `cmt-section` and `cmt-title` accept command arguments or standard input.
+
+### Project TODO Management
+
+```bash
+todo "Write release notes"
+todo --find
+todo --collect
+todo --file docs/TODO.md
+```
+
+`todo` uses the current Git repository root and defaults to `TODO.md`. It searches for comments matching `# todo:` with `rg`.
+
+### System and Terminal Helpers
+
+```bash
+calendar
+micm
+popup htop
+psls
+spotlight
+```
+
+`calendar` supports `h` and `l` for month navigation, `t` for today, and `q` or Escape to quit. `spotlight` opens Brave Browser from a `peco` selection.
+
+### Recording and QR Codes
+
+```bash
+rec "Demo Session"
+qr "https://example.com"
+```
+
+`rec` records to a timestamped `.cast` file and prompts before uploading to asciinema.org. `qr` downloads a QR code PNG into `/tmp` and opens it with the platform opener when available.
 
 ## Configuration
 
-Some scripts support environment variables for customization:
-- `TITLE_FONT`: Override the default font used by the `title` script.
-- `EDITOR`: The text editor used by the `todo` script (defaults to `vi`).
+| Variable | Used by | Purpose |
+| --- | --- | --- |
+| `XDG_BIN_HOME` | `install.sh` | Overrides the installation target directory. |
+| `TITLE_FONT` | `title` | Overrides random figlet font selection. |
+| `EDITOR` | `todo` | Selects the editor for opening the TODO file. Defaults to `vi`. |
+| `ASCIINEMA_API_URL` | `rec` | Set to `https://asciinema.org` before upload. |
+
+The `title` command expects figlet fonts in:
+
+```bash
+~/.local/share/figlet
+```
