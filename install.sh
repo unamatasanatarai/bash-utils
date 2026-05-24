@@ -1,59 +1,43 @@
 #!/usr/bin/env bash
 
-# Pure Bash installer for bash-utils
-# Target: ~/.local/bin
+target=${XDG_BIN_HOME:-"$HOME/.local/bin"}
 
-__target="${HOME}/.local/bin"
+dir=${BASH_SOURCE[0]}
+dir=${dir%/*}
 
-# Resolve script directory without subshells or dirname
-__dir="${BASH_SOURCE[0]%/*}"
-[[ "$__dir" == "${BASH_SOURCE[0]}" ]] && __dir="."
+if [[ $dir == "$dir" ]]; then
+    dir=.
+fi
 
-# Ensure target directory exists
-if [[ ! -d "$__target" ]]; then
-    mkdir -p "$__target"
+if [[ ! -d $target ]]; then
+    mkdir -p -- "$target"
     if [[ $? -ne 0 ]]; then
-        printf "Error: Failed to create %s\n" "$__target" >&2
+        printf 'Failed to create directory: %s\n' "$target" >&2
         exit 1
     fi
 fi
 
-# Iterate files using globbing
-for __file in "${__dir}"/src/*; do
-    # Skip directories
-    [[ -d "$__file" ]] && continue
+for file in "$dir"/src/*; do
+    [[ -f $file ]] || continue
 
-    __name="${__file##*/}"
+    name=${file##*/}
 
-    # Filter excluded files using case for flat flow
-    case "$__name" in
-    "install.sh" | "README.md" | .*)
-        continue
-        ;;
-    esac
-
-    # Copy and set permissions
-    cp "$__file" "$__target/"
+    install -m 755 -- "$file" "$target/$name"
     if [[ $? -ne 0 ]]; then
-        printf "Error: Failed to copy %s\n" "$__name" >&2
+        printf 'Failed to install: %s\n' "$name" >&2
         exit 1
     fi
 
-    chmod +x "$__target/$__name"
-    if [[ $? -ne 0 ]]; then
-        printf "Error: Failed to set permissions on %s\n" "$__name" >&2
-        exit 1
-    fi
-
-    printf "Installed: %s\n" "$__name"
+    printf 'Installed: %s\n' "$name"
 done
 
-# PATH check using glob match
-if [[ ":$PATH:" != *":$__target:"* ]]; then
-    printf "\nWARNING: %s is not in PATH\n" "$__target" >&2
-    printf "Add to your shell config:\n" >&2
-    printf "export PATH=\"\$HOME/.local/bin:\$PATH\"\n" >&2
-    exit 2
-fi
-
-printf "\nInstallation complete\n"
+case :$PATH: in
+    *:"$target":*)
+        ;;
+    *)
+        printf '\nWARNING: %s is not in PATH\n' "$target" >&2
+        printf 'Add this to your shell config:\n' >&2
+        printf 'export PATH="%s:$PATH"\n' "$target" >&2
+        exit 2
+        ;;
+esac
